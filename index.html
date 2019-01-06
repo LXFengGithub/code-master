@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>demo by LXFeng</title>
+    <style type="text/css">
+        /* 标签重定义 */
+        body{
+            padding:0;
+            margin:0;
+        }
+        img{
+            border:none;
+        }
+        a{
+            text-decoration:none;color:#444;
+        }
+        a:hover{
+            color:#999;
+        }
+        .clearfix {
+            zoom: 0;
+        }
+        .clearfix {
+            content: "";
+            display: block;
+            clear: both;
+            visibility: hidden;
+            height: 0;
+        }
+        .title{
+            text-align:center;
+            width:600px;
+            margin:20px auto;
+        }
+        /* 图片动画 */
+        @keyframes shade{
+            from{opacity:1;}
+            15%{opacity:0.4;}
+            to{opacity:1;}
+        }
+        /* wrap */
+        .wrap{
+            margin:0 auto;
+            position:relative;
+            display: none;
+        }
+        .wrap .box{
+            width:280px;
+            padding:10px;
+            border:none;
+            float:left;
+        }
+        .wrap .box .info{
+            width:280px;
+            height:auto;
+            border-radius:8px;
+            box-shadow:0 0 11px #666;
+            background:#fff;
+        }
+        .wrap .box .info .pic{
+            width:260px;
+            margin:0 auto;
+            padding-top:10px;
+        }
+        .wrap .box:hover .pic{
+            animation:shade 3s ease-in-out;
+
+        }
+        .wrap .box .info .pic img{
+            width:260px;
+            border-radius:3px;
+        }
+        .wrap .box .info .title{
+            width: 100%;
+            height:40px;
+            text-align:center;
+            display: block;
+            color:#666;
+            font-size:18px;
+            font-weight:bold;
+        }
+        .loading{
+            width: 58px;
+            height: 10px;
+            background: url(images/load.gif);
+            position:absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading"></div>
+    <section class="title">
+        <h2>项目展示</h2>By LXFeng
+    </section>
+    <div class="wrap " id="wrap"></div>
+    <!-- <div id="loader"></div> -->
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript">
+
+        window.onload = function(){
+            //setTimeout(show,2000);
+            show();
+        }
+        // 模拟后台数据
+        var data = [
+            {
+                'src':'1.jpg',
+                'title':'经典地雷小游戏',
+                'href':'https://lxfenggithub.github.io/mine/'
+            },
+            {
+                'src':'2.jpg',
+                'title':'指北针',
+                'href':'https://lxfenggithub.github.io/Compass/'
+            },
+            {
+                'src':'3.jpg',
+                'title':'3D翻转',
+                'href':'https://lxfenggithub.github.io/3D-flip/'
+            },
+            {
+                'src':'4.jpg',
+                'title':'背景切换选项卡',
+                'href':'https://lxfenggithub.github.io/bg-toggle/'
+            },
+            {
+                'src':'5.jpg',
+                'title':'仿-bootstrap官方',
+                'href':'https://lxfenggithub.github.io/copy-bootstrap/'
+            },
+            {
+                'src':'6.jpg',
+                'title':'手风琴照片墙',
+                'href':'https://lxfenggithub.github.io/accordion-photos/'
+            },
+            {
+                'src':'7.jpg',
+                'title':'仿-渡一官方-响应式',
+                'href':'https://lxfenggithub.github.io/duyi-Responsive/'
+            },
+        ];
+
+        /**
+         * [show 瀑布流主函数]
+         */
+        function show(){
+            wrap = document.getElementById('wrap');
+            var loading = document.getElementById('loading');
+            loading.style.display = 'none';
+            wrap.style.display = 'block';
+            //  1. 获取每一个box元素
+            var boxs  = getClass(wrap,"box");
+            //  2.获得屏幕可显示的列数
+            var boxW = boxs[0].offsetWidth;
+            //  获取总列数
+            var colsNum = Math.floor(document.documentElement.clientWidth/boxW);
+            //  为外层赋值宽度
+            wrap.style.width = boxW*colsNum+'px';
+            //定义一个数组存储每一列的高度
+            var everyH = [];
+            //  3.循环出所有的box并按照瀑布流排列
+            for (var i = 0; i < boxs.length; i++) {
+                if(i<colsNum){
+                    everyH[i] = boxs[i].offsetHeight - 18;
+                }else{
+                    var minH = Math.min.apply(null,everyH);//获得最小的列的高度
+                    var minIndex = getIndex(minH,everyH); //获得最小列的索引
+                    getStyle(boxs[i],minH,boxs[minIndex].offsetLeft,i);
+                    everyH[minIndex] += boxs[i].offsetHeight - 20;//更新最小列的高度
+                }
+            }
+        }
+        /**
+         * [createEle 创建子元素]
+         */
+        function createEle(){
+            for(i in data){
+                 //创建box
+                var box = document.createElement('div');
+                box.className = 'box';
+                wrap.appendChild(box);
+
+                //创建info
+                var info = document.createElement('div');
+                info.className = 'info';
+                box.appendChild(info);
+
+                //创建title
+                var title = document.createElement('span');
+                title.innerHTML = data[i].title;
+                title.className = 'title';
+                info.appendChild(title);
+
+                //创建pic
+                var pic = document.createElement('div');
+                pic.className = 'pic';
+                info.insertBefore(pic,info.childNodes[0]);
+
+                //创建a标记
+                var a = document.createElement('a');
+                a.href = data[i].href;
+                a.setAttribute("target","_blank");
+                pic.appendChild(a);
+
+                //创建img
+                var img = document.createElement('img');
+                // img.src = 'code/images/'+data[i].src;
+                img.setAttribute("data-url",data[i].src);
+                a.appendChild(img);
+
+
+            };
+        };
+        createEle();
+        /**
+        * 获取类元素
+        * @param  warp      [Obj] 外层
+        * @param  className [Str] 类名
+        */
+        function getClass(wrap,className){
+            var obj = wrap.getElementsByTagName('*');
+            var arr = [];
+            for(var i=0;i<obj.length;i++){
+                if(obj[i].className == className){
+                    arr.push(obj[i]);
+                }
+            }
+            return arr;
+        }
+        /**
+        * 获取最小列的索引
+        * @param  minH   [Num] 最小高度
+        * @param  everyH [Arr] 所有列高度的数组
+        */
+        function getIndex(minH,everyH){
+            for(index in everyH){
+                if (everyH[index] == minH ) return index;
+            }
+        }
+
+        /**
+        * 设置加载样式
+        * @param  box   [obj] 设置的Box
+        * @param  top   [Num] box的top值
+        * @param  left  [Num] box的left值
+        * @param  index [Num] box的第几个
+        */
+
+        var getStartNum = 0;//设置请求加载的条数的位置
+        function getStyle(box,top,left,index){
+            if (getStartNum>=index) return;
+            $(box).css({
+                'position':'absolute',
+                'top':top,
+                "left":left,
+                "opacity":"0"
+            });
+            $(box).stop().animate({
+                "opacity":"1"
+            },999);
+            getStartNum = index;//更新请求数据的条数位置
+        }
+
+
+        /**
+         * [延迟加载插件]
+         * @return {[type]} [description]
+         */
+        (function(){
+            /**
+             * [tagName 封装获取css类]
+             * @param  {[type]} tagName [指定的css类]
+             * @return {[type]}         [description]
+             */
+            function tagName(tagName){
+                return document.getElementsByTagName(tagName);
+            }
+            /**
+             * [$ 封装获取ID]
+             * @param  {[type]} id [值得的ID]
+             * @return {[type]}    [description]
+             */
+            function $(id){
+                return document.getElementById(id);
+            }
+            /**
+             * [跨浏览器兼容addEventListener]
+             * @param {[type]} obj  [监听元素]
+             * @param {[type]} type [事件类型]
+             * @param {[type]} func [回调函数]
+             */
+            function addEvent(obj,type,func){
+                if(obj.addEventListener){
+                    obj.addEventListener(type,func,false);
+                }else if(obj.attachEvent){
+                    obj.attachEvent('on'+type,func);
+                }
+            }
+            //这里可以按照需要配置些参数
+            var v={
+                eleGroup:null,
+                eleTop:null,
+                eleHeight:null,
+                screenHeight:null,
+                visibleHeight:null,
+                scrollHeight:null,
+                scrolloverHeight:null,
+                limitHeight:null
+            }
+            /**
+             * [对数据进行初始化]
+             * @param  {[type]} element [description]
+             * @return {[type]}         [description]
+             */
+            function init(element){
+                // 获取DOM
+                v.eleGroup = tagName(element)
+                screenHeight=document.documentElement.clientHeight;
+                scrolloverHeight=document.body.scrollTop;
+                for(var i=0,j=v.eleGroup.length;i<j;i++){
+                    if(v.eleGroup[i].offsetTop<=screenHeight && v.eleGroup[i].getAttribute('data-url')){
+                        v.eleGroup[i].setAttribute('src','images/'+v.eleGroup[i].getAttribute('data-url'));
+                        v.eleGroup[i].removeAttribute('data-url')
+                    }
+                }
+            }
+            /**
+             * [lazyLoad 通过获取的data-url 修改图片的 src]
+             * @return {[type]} [description]
+             */
+            function lazyLoad(){
+                if(document.body.scrollTop == 0){
+                    limitHeight=document.documentElement.scrollTop+document.documentElement.clientHeight;
+                }else{
+                    limitHeight=document.body.scrollTop+document.documentElement.clientHeight;
+                }
+                for(var i=0,j=v.eleGroup.length;i<j;i++){
+                    if(v.eleGroup[i].offsetTop<=limitHeight && v.eleGroup[i].getAttribute('data-url')){
+                        v.eleGroup[i].src=v.eleGroup[i].getAttribute('data-url');
+                        v.eleGroup[i].removeAttribute('data-url')
+                    }
+                }
+            }
+            init('img')
+            addEvent(window,'scroll',lazyLoad);
+        })()
+    </script>
+</body>
+</html>
